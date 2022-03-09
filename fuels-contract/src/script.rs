@@ -51,7 +51,8 @@ impl Script {
             output_directory: None,
         };
 
-        let (raw, _) = forc_build::build(build_command).map_err(Error::CompilationError)?;
+        let compiled = forc_build::build(build_command)
+            .map_err(|err| Error::CompilationError(err.to_string()))?;
 
         let manifest_dir = find_manifest_dir(&PathBuf::from(project_path)).unwrap();
         let manifest = read_manifest(&manifest_dir).map_err(|e| {
@@ -64,7 +65,7 @@ impl Script {
         };
 
         Ok(CompiledScript {
-            raw,
+            raw: compiled.bytecode,
             target_network_url: node_url.to_string(),
         })
     }

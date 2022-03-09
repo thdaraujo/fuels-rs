@@ -274,9 +274,13 @@ impl Contract {
             use_ir: false,
         };
 
-        let (raw, _) = forc_build::build(build_command).map_err(Error::CompilationError)?;
+        let compiled = forc_build::build(build_command)
+            .map_err(|err| Error::CompilationError(err.to_string()))?;
 
-        Ok(CompiledContract { salt, raw })
+        Ok(CompiledContract {
+            salt,
+            raw: compiled.bytecode,
+        })
     }
 
     /// Crafts a transaction used to deploy a contract
