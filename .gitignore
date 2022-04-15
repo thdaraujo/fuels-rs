@@ -11,3 +11,7 @@ Cargo.lock
 
 # Don't add the generated MDBook artifacts
 docs/book/
+
+# Ignore IDE configs
+.vscode/
+.idea/
