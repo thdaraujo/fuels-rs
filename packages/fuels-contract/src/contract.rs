@@ -8,7 +8,7 @@ use fuel_gql_client::client::FuelClient;
 use fuel_tx::{
     Address, AssetId, ContractId, Input, Output, Receipt, StorageSlot, Transaction, UtxoId,
 };
-use fuel_types::{Bytes32, Salt, Word};
+use fuel_types::{Bytes32, Immediate18, Salt, Word};
 use fuel_vm::consts::{REG_CGAS, REG_ONE};
 use fuel_vm::prelude::Contract as FuelContract;
 use fuel_vm::script_with_data_offset;
@@ -85,6 +85,20 @@ impl Contract {
         //
         // Note that these are soft rules as we're picking this addresses simply because they
         // non-reserved register.
+        let mut gas_instructions: Vec<Opcode> = vec![];
+        match call_parameters.gas_to_forward {
+            None => gas_instructions.push(Opcode::LW(0x11, REG_CGAS, 0)),
+            _ => {
+                gas_instructions.push(
+                    Opcode::(0x11, call_parameters.gas_to_forward.unwrap()
+                    )
+                );
+                gas_instructions.push(
+                    Opcode::LW(0x11, 0x11, 0)
+                )
+            }
+        };
+
         let forward_data_offset = ContractId::LEN + WORD_SIZE;
         let (script, offset) = script_with_data_offset!(
             data_offset,
@@ -102,7 +116,7 @@ impl Contract {
                 // Load the asset id to use to 0x13.
                 Opcode::MOVI(0x13, data_offset),
                 // Call the transfer contract.
-                Opcode::CALL(0x10, 0x12, 0x13, REG_CGAS),
+                Opcode::CALL(0x10, 0x12, 0x13, 0x11),
                 Opcode::RET(REG_ONE),
             ]
         );
