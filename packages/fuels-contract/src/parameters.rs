@@ -1,11 +1,7 @@
 use fuel_tx::AssetId;
-use fuel_vm::consts::REG_CGAS;
 use fuels_core::constants::{
     DEFAULT_BYTE_PRICE, DEFAULT_GAS_LIMIT, DEFAULT_GAS_PRICE, DEFAULT_MATURITY, NATIVE_ASSET_ID,
 };
-
-const NO_GAS_FORWARDED: Option<u64> = None;
-
 #[derive(Debug)]
 pub struct TxParameters {
     pub gas_price: u64,
@@ -22,10 +18,13 @@ pub struct CallParameters {
 }
 
 impl CallParameters {
-    pub fn new(gas_to_forward: Option<u64>, amount: Option<u64>, asset_id: Option<AssetId>) ->
-                                                                                            Self {
+    pub fn new(
+        gas_to_forward: Option<u64>,
+        amount: Option<u64>,
+        asset_id: Option<AssetId>,
+    ) -> Self {
         Self {
-            gas_to_forward:  gas_to_forward,
+            gas_to_forward: gas_to_forward,
             amount: amount.unwrap_or(0),
             asset_id: asset_id.unwrap_or(NATIVE_ASSET_ID),
         }

@@ -1331,7 +1331,7 @@ async fn test_amount_and_asset_forwarding() {
     let tx_params = TxParameters::new(None, Some(1_000_000), None, None);
     // Forward 1_000_000 coin amount of native asset_id
     // this is a big number for checking that amount can be a u64
-    let call_params = CallParameters::new(Some(1_000_000), None);
+    let call_params = CallParameters::new(None, Some(1_000_000), None);
 
     let response = instance
         .get_msg_amount()
@@ -1363,7 +1363,7 @@ async fn test_amount_and_asset_forwarding() {
         .await
         .unwrap();
 
-    let call_params = CallParameters::new(Some(0), Some(AssetId::from(*id)));
+    let call_params = CallParameters::new(None, Some(0), Some(AssetId::from(*id)));
     let tx_params = TxParameters::new(None, Some(1_000_000), None, None);
 
     let response = instance
