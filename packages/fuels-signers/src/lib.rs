@@ -143,8 +143,14 @@ mod tests {
         let wallet_1 = LocalWallet::new_from_private_key(pk_1, provider.clone());
         let wallet_2 = LocalWallet::new_from_private_key(pk_2, provider);
 
+        println!("wallet_1: {:?}", wallet_1);
+        println!("wallet_2: {:?}", wallet_2);
+
         let wallet_1_initial_coins = wallet_1.get_coins().await.unwrap();
         let wallet_2_initial_coins = wallet_2.get_coins().await.unwrap();
+
+        println!("wallet_1: {:?}", wallet_1_initial_coins);
+        println!("wallet_2: {:?}", wallet_2_initial_coins);
 
         // Check initial wallet state.
         assert_eq!(wallet_1_initial_coins.len(), 1);
@@ -209,7 +215,11 @@ mod tests {
         let (pk_1, mut coins_1) = setup_address_and_coins(1, 5);
         let (pk_2, coins_2) = setup_address_and_coins(1, 5);
 
+        println!("Coin_1: {:?}", coins_1);
+
         coins_1.extend(coins_2);
+
+        println!("Coin_1 extended: {:?}", coins_1);
 
         let (client, _) = setup_test_client(coins_1).await;
         let provider = Provider::new(client);

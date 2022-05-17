@@ -106,6 +106,18 @@ impl Provider {
         Ok(res)
     }
 
+    // Todo Emir
+    pub async fn get_full_balance_from_wallet(
+        &self, from: &Address
+    ) -> io::Result<Vec<Coin>> {
+
+        let mut coins: Vec<Coin> = vec![];
+
+        unimplemented!()
+    }
+
+
+
     /// Craft a transaction used to transfer funds between two addresses.
     pub fn build_transfer_tx(
         &self,

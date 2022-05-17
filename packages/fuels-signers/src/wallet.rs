@@ -218,6 +218,17 @@ impl Wallet {
             .get_spendable_coins(&self.address(), *asset_id, amount)
             .await
     }
+
+    pub async fn get_full_balance_from_wallet(
+        &self,
+        asset_id: &AssetId,
+        amount: u64,
+    ) -> io::Result<Vec<Coin>> {
+        self.provider
+            .get_full_balance_from_wallet(&self.address())
+            .await
+    }
+
 }
 
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
