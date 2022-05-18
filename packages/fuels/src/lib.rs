@@ -24,6 +24,10 @@ pub mod core {
     pub use fuels_core::*;
 }
 
+pub mod node {
+    pub use fuel_core::service::{Config, FuelService};
+}
+
 pub mod signers {
     pub use fuels_signers::*;
 }
