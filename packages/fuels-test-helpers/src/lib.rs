@@ -54,7 +54,10 @@ pub fn setup_address_and_coins(
 
 // Setup a test client with the given coins. We return the SocketAddr so the launched node
 // client can be connected to more easily (even though it is often ignored).
-pub async fn setup_test_client(coins: Vec<(UtxoId, Coin)>) -> (FuelClient, SocketAddr) {
+pub async fn setup_test_client(
+    coins: Vec<(UtxoId, Coin)>,
+    addr: Option<SocketAddr>,
+) -> (FuelClient, SocketAddr) {
     let coin_configs = coins
         .into_iter()
         .map(|(utxo_id, coin)| CoinConfig {
@@ -70,6 +73,7 @@ pub async fn setup_test_client(coins: Vec<(UtxoId, Coin)>) -> (FuelClient, Socke
 
     // Setup node config with genesis coins and utxo_validation enabled
     let config = Config {
+        addr: addr.unwrap_or_else(|| Config::local_node().addr),
         chain_conf: ChainConfig {
             initial_state: Some(StateConfig {
                 coins: Some(coin_configs),

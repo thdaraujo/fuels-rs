@@ -53,7 +53,7 @@ mod tests {
 
         let secret = unsafe { SecretKey::from_bytes_unchecked(secret_seed) };
 
-        let (client, _) = setup_test_client(vec![]).await;
+        let (client, _) = setup_test_client(vec![], None).await;
         let wallet = LocalWallet::new_from_private_key(secret, Provider::new(client));
 
         let message = "my message";
@@ -79,7 +79,7 @@ mod tests {
             SecretKey::from_str("5f70feeff1f229e4a95e1056e8b4d80d0b24b565674860cc213bdb07127ce1b1")
                 .unwrap();
 
-        let (client, _) = setup_test_client(vec![]).await;
+        let (client, _) = setup_test_client(vec![], None).await;
         let wallet = LocalWallet::new_from_private_key(secret, Provider::new(client));
 
         let input_coin = Input::coin(
@@ -137,7 +137,7 @@ mod tests {
         coins_1.extend(coins_2);
 
         // Setup a provider and node with both set of coins.
-        let (client, _) = setup_test_client(coins_1).await;
+        let (client, _) = setup_test_client(coins_1, None).await;
         let provider = Provider::new(client);
 
         let wallet_1 = LocalWallet::new_from_private_key(pk_1, provider.clone());
@@ -211,7 +211,7 @@ mod tests {
 
         coins_1.extend(coins_2);
 
-        let (client, _) = setup_test_client(coins_1).await;
+        let (client, _) = setup_test_client(coins_1, None).await;
         let provider = Provider::new(client);
 
         let wallet_1 = LocalWallet::new_from_private_key(pk_1, provider.clone());
