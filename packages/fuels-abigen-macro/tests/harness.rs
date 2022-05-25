@@ -1,5 +1,6 @@
 use fuel_core::service::Config;
 use fuel_tx::{AssetId, ContractId, Receipt, Salt};
+use fuels::contract::contract::CallResponse;
 use fuels::prelude::{
     launch_provider_and_get_single_wallet, launch_provider_and_get_wallets, setup_coins,
     setup_test_provider, CallParameters, Contract, Error, LocalWallet, Provider, Signer,
@@ -8,7 +9,8 @@ use fuels::prelude::{
 use fuels::test_helpers::WalletsConfig;
 use fuels_abigen_macro::abigen;
 use fuels_core::constants::NATIVE_ASSET_ID;
-use fuels_core::Token;
+use fuels_core::tx::PanicReason;
+use fuels_core::{Bits256, Token};
 use rand::prelude::StdRng;
 use rand::{Rng, SeedableRng};
 use sha2::{Digest, Sha256};
@@ -1551,27 +1553,28 @@ fn get_panic_reason(r: CallResponse<u64>) -> String {
     let script_results = &receipts[2];
     script_results.result().unwrap().reason().to_string()
 }
+fn build_storage_key(index: usize, value: u8) -> [u8; 32] {
+    let mut storage_key = [0u8; 32];
+    storage_key[index] = value;
+    storage_key
+}
 #[tokio::test]
 async fn repro_storage_slots() {
-    let rng = &mut StdRng::seed_from_u64(2322u64);
     abigen!(
         MyContract,
-        "fuels-abigen-macro/tests/test_projects/storage-slots-repro/abi.json",
+        "packages/fuels-abigen-macro/tests/test_projects/storage_slots_repro/out/debug/storage_slots_repro-abi.json"
     );
-    // Build the contract
-    let salt: [u8; 32] = rng.gen();
-    let salt = Salt::from(salt);
-    let compiled = Contract::compile_sway_contract(
-        "../fuels-abigen-macro/tests/test_projects/storage-slots-repro",
-        salt,
+
+    let wallet = launch_provider_and_get_single_wallet().await;
+    let id = Contract::deploy(
+        "tests/test_projects/storage_slots_repro/out/debug/storage_slots_repro.bin",
+        &wallet,
+        TxParameters::default(),
     )
+    .await
     .unwrap();
 
-    let (client, contract_id) = Contract::launch_and_deploy(&compiled).await.unwrap();
-
-    println!("Contract deployed @ {:x}", contract_id);
-
-    let contract_instance = MyContract::new(compiled, client);
+    let contract_instance = MyContract::new(id.to_string(), wallet.clone());
     for index in 0..32 {
         for value in 0..=0xFF {
             let storage_key = build_storage_key(index, value);
@@ -1600,25 +1603,21 @@ async fn repro_storage_slots() {
 }
 #[tokio::test]
 async fn storage_slot_access() {
-    let rng = &mut StdRng::seed_from_u64(2322u64);
     abigen!(
         MyContract,
-        "fuels-abigen-macro/tests/test_projects/storage-slots-repro/abi.json",
+        "packages/fuels-abigen-macro/tests/test_projects/storage_slots_repro/out/debug/storage_slots_repro-abi.json"
     );
-    // Build the contract
-    let salt: [u8; 32] = rng.gen();
-    let salt = Salt::from(salt);
-    let compiled = Contract::compile_sway_contract(
-        "../fuels-abigen-macro/tests/test_projects/storage-slots-repro",
-        salt,
+
+    let wallet = launch_provider_and_get_single_wallet().await;
+    let id = Contract::deploy(
+        "tests/test_projects/storage_slots_repro/out/debug/storage_slots_repro.bin",
+        &wallet,
+        TxParameters::default(),
     )
+    .await
     .unwrap();
 
-    let (client, contract_id) = Contract::launch_and_deploy(&compiled).await.unwrap();
-
-    println!("Contract deployed @ {:x}", contract_id);
-
-    let contract_instance = MyContract::new(compiled, client);
+    let contract_instance = MyContract::new(id.to_string(), wallet.clone());
     let storage_key = [0xBB; 32];
     println!("Storage key: {:?}", storage_key);
     let result = contract_instance
