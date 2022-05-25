@@ -1545,3 +1545,86 @@ async fn unit_type_enums() {
         .unwrap();
     assert_eq!(result.value, BimBamBoum::Boum());
 }
+
+fn get_panic_reason(r: CallResponse<u64>) -> String {
+    let receipts = r.receipts;
+    let script_results = &receipts[2];
+    script_results.result().unwrap().reason().to_string()
+}
+#[tokio::test]
+async fn repro_storage_slots() {
+    let rng = &mut StdRng::seed_from_u64(2322u64);
+    abigen!(
+        MyContract,
+        "fuels-abigen-macro/tests/test_projects/storage-slots-repro/abi.json",
+    );
+    // Build the contract
+    let salt: [u8; 32] = rng.gen();
+    let salt = Salt::from(salt);
+    let compiled = Contract::compile_sway_contract(
+        "../fuels-abigen-macro/tests/test_projects/storage-slots-repro",
+        salt,
+    )
+    .unwrap();
+
+    let (client, contract_id) = Contract::launch_and_deploy(&compiled).await.unwrap();
+
+    println!("Contract deployed @ {:x}", contract_id);
+
+    let contract_instance = MyContract::new(compiled, client);
+    for index in 0..32 {
+        for value in 0..=0xFF {
+            let storage_key = build_storage_key(index, value);
+            let result = contract_instance
+                .initialize_storage_slot(storage_key)
+                .call()
+                .await
+                .unwrap();
+            if (index < 5) && (value > 0) {
+                assert_eq!(result.value, 0);
+                assert_eq!(
+                    get_panic_reason(result),
+                    PanicReason::MemoryOverflow.to_string()
+                );
+            } else if (index == 5) && (value > 127) {
+                assert_eq!(result.value, 0);
+                assert_eq!(
+                    get_panic_reason(result),
+                    PanicReason::MemoryOverflow.to_string()
+                );
+            } else {
+                assert_eq!(result.value, 214);
+            }
+        }
+    }
+}
+#[tokio::test]
+async fn storage_slot_access() {
+    let rng = &mut StdRng::seed_from_u64(2322u64);
+    abigen!(
+        MyContract,
+        "fuels-abigen-macro/tests/test_projects/storage-slots-repro/abi.json",
+    );
+    // Build the contract
+    let salt: [u8; 32] = rng.gen();
+    let salt = Salt::from(salt);
+    let compiled = Contract::compile_sway_contract(
+        "../fuels-abigen-macro/tests/test_projects/storage-slots-repro",
+        salt,
+    )
+    .unwrap();
+
+    let (client, contract_id) = Contract::launch_and_deploy(&compiled).await.unwrap();
+
+    println!("Contract deployed @ {:x}", contract_id);
+
+    let contract_instance = MyContract::new(compiled, client);
+    let storage_key = [0xBB; 32];
+    println!("Storage key: {:?}", storage_key);
+    let result = contract_instance
+        .test_storage_slot(storage_key)
+        .call()
+        .await;
+    // This fails with a MemoryOverflow
+    println!("Result: {:?}", result);
+}
