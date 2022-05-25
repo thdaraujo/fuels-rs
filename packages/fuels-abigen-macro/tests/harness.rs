@@ -1551,7 +1551,8 @@ async fn unit_type_enums() {
 fn get_panic_reason(r: CallResponse<u64>) -> String {
     let receipts = r.receipts;
     let script_results = &receipts[2];
-    script_results.result().unwrap().reason().to_string()
+    println!("{:?}", script_results);
+    String::from("Henlo")
 }
 fn build_storage_key(index: usize, value: u8) -> [u8; 32] {
     let mut storage_key = [0u8; 32];
@@ -1583,21 +1584,7 @@ async fn repro_storage_slots() {
                 .call()
                 .await
                 .unwrap();
-            if (index < 5) && (value > 0) {
-                assert_eq!(result.value, 0);
-                assert_eq!(
-                    get_panic_reason(result),
-                    PanicReason::MemoryOverflow.to_string()
-                );
-            } else if (index == 5) && (value > 127) {
-                assert_eq!(result.value, 0);
-                assert_eq!(
-                    get_panic_reason(result),
-                    PanicReason::MemoryOverflow.to_string()
-                );
-            } else {
-                assert_eq!(result.value, 214);
-            }
+            assert_eq!(result.value, 214);
         }
     }
 }
